@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Historisation Client</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: auto;
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 1.5rem;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #202124;
+            font-size: 2rem;
+        }
+
+        form {
+            display: grid;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        form label {
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+            color: #202124;
+        }
+
+        form input, form textarea, form select {
+            padding: 0.8rem;
+            font-size: 1rem;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            background-color: #ffffff;
+            width: 100%;
+            color: #202124;
+            transition: border-color 0.3s ease;
+        }
+
+        form input:focus, form textarea:focus, form select:focus {
+            border-color: #1a73e8;
+            outline: none;
+        }
+
+        form button {
+            padding: 1rem;
+            background-color: #1a73e8;
+            color: #ffffff;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #1558b0;
+        }
+
+        #toggleButton {
+            display: block;
+            width: 100%;
+            padding: 1rem;
+            font-size: 1rem;
+            background-color: #1a73e8;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-bottom: 1.5rem;
+            transition: background-color 0.3s ease;
+        }
+
+        #toggleButton:hover {
+            background-color: #1558b0;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.3);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            width: 95%;
+            max-width: 800px;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .modal-header h2 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #202124;
+        }
+
+        .close {
+            cursor: pointer;
+            background-color: transparent;
+            border: none;
+            font-size: 1.5rem;
+            color: #1a73e8;
+        }
+
+        .search-container {
+            display: flex;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-container input {
+            flex: 1;
+            padding: 0.8rem;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            margin-right: 0.5rem;
+            color: #202124;
+        }
+
+        .search-container button {
+            background-color: #1a73e8;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #ffffff;
+            padding: 0.8rem;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+
+        .search-container button:hover {
+            background-color: #1558b0;
+        }
+
+        .contact-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .contact-card {
+            padding: 1rem;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            word-break: break-word;
+            overflow-wrap: break-word;
+            position: relative;
+        }
+
+        .contact-card h2 {
+            margin-bottom: 0.5rem;
+            font-size: 1.2rem;
+            color: #202124;
+        }
+
+        .contact-card p {
+            margin: 0.3rem 0;
+            font-size: 1rem;
+            color: #5f6368;
+        }
+
+        .contact-card button {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background-color: #ff3b30;
+            border: none;
+            color: #ffffff;
+            padding: 0.5rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .contact-card button:hover {
+            background-color: #e60023;
+        }
+
+        .modal-footer {
+            text-align: center;
+            margin-top: 1rem;
+        }
+
+        .modal-footer button {
+            padding: 0.8rem 2rem;
+            background-color: #1a73e8;
+            color: #ffffff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .modal-footer button:hover {
+            background-color: #1558b0;
+        }
+
+        /* Modal de confirmation de suppression */
+        .confirm-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+
+        .confirm-modal-content {
+            background-color: #ffffff;
+            padding: 1.5rem;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        .confirm-modal-content p {
+            margin-bottom: 1rem;
+            font-size: 1rem;
+            color: #202124;
+        }
+
+        .confirm-modal-content button {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 1rem;
+            margin: 0.5rem;
+            transition: background-color 0.3s ease;
+        }
+
+        .confirm-modal-content .confirm-yes {
+            background-color: #ff3b30;
+            color: #ffffff;
+        }
+
+        .confirm-modal-content .confirm-yes:hover {
+            background-color: #e60023;
+        }
+
+        .confirm-modal-content .confirm-no {
+            background-color: #1a73e8;
+            color: #ffffff;
+        }
+
+        .confirm-modal-content .confirm-no:hover {
+            background-color: #1558b0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Historisation Client</h1>
+
+        <!-- Formulaire de saisie de contact -->
+        <form id="contactForm">
+            <label for="contactNumber">Numéro de téléphone <span>*</span></label>
+            <input type="tel" id="contactNumber" required placeholder="Entrer le numéro de téléphone">
+
+            <label for="clientName">Nom et prénom du client <span>*</span></label>
+            <input type="text" id="clientName" required placeholder="Entrer le nom et prénom">
+
+            <label for="clientNumber">Numéro client (facultatif)</label>
+            <input type="text" id="clientNumber" placeholder="Entrer le numéro client">
+
+            <label for="email">Adresse email (facultatif)</label>
+            <input type="email" id="email" placeholder="Entrer l'adresse email">
+
+            <label for="contactReason">Motif du contact <span>*</span></label>
+            <textarea id="contactReason" rows="3" required placeholder="Indiquer le motif du contact"></textarea>
+
+            <label for="brandName">Marque contactée (facultatif)</label>
+            <select id="brandName">
+                <option value="">Sélectionner une marque</option>
+                <option value="Retz">Retz</option>
+                <option value="Nathan">Nathan</option>
+                <option value="Materiel educatif">Matériel éducatif</option>
+                <option value="MDI">MDI</option>
+                <option value="Le Robert">Le Robert</option>
+                <option value="Maxicours">Maxicours</option>
+                <option value="Syros">Syros</option>
+                <option value="LEA">LEA</option>
+                <option value="Bordas">Bordas</option>
+                <option value="CNS">CNS</option>
+            </select>
+
+            <button type="submit">Ajouter le contact</button>
+        </form>
+
+        <button id="toggleButton">Afficher la liste des contacts</button>
+
+        <!-- Modal pour afficher les contacts -->
+        <div id="contactModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Liste des contacts</h2>
+                    <button class="close">&times;</button>
+                </div>
+                <div class="search-container">
+                    <input type="text" id="searchBar" placeholder="Rechercher...">
+                    <button id="searchButton">🔍</button>
+                </div>
+                <div id="modalContactList" class="contact-list"></div>
+                <div class="modal-footer">
+                    <button id="closeModalFooter">Fermer</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Modal de confirmation de suppression -->
+        <div id="confirmModal" class="confirm-modal">
+            <div class="confirm-modal-content">
+                <p>Êtes-vous sûr de vouloir supprimer ce contact ?</p>
+                <button id="confirmYes" class="confirm-yes">Oui</button>
+                <button id="confirmNo" class="confirm-no">Non</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let db;
+        let contactToDelete;
+
+        // Ouverture de la base de données IndexedDB
+        const request = indexedDB.open("contactsDB", 1);
+
+        request.onupgradeneeded = function(event) {
+            db = event.target.result;
+            const objectStore = db.createObjectStore("contacts", { keyPath: "id", autoIncrement: true });
+            objectStore.createIndex("contactNumber", "contactNumber", { unique: false });
+            objectStore.createIndex("clientName", "clientName", { unique: false });
+            objectStore.createIndex("clientNumber", "clientNumber", { unique: false });
+            objectStore.createIndex("email", "email", { unique: false });
+            objectStore.createIndex("contactReason", "contactReason", { unique: false });
+            objectStore.createIndex("brandName", "brandName", { unique: false });
+        };
+
+        request.onsuccess = function(event) {
+            db = event.target.result;
+        };
+
+        request.onerror = function(event) {
+            console.error("Erreur lors de l'ouverture de la base de données", event);
+        };
+
+        // Enregistrement des contacts dans la base de données
+        document.getElementById('contactForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+
+            const contactNumber = document.getElementById('contactNumber').value;
+            const clientName = document.getElementById('clientName').value;
+            const clientNumber = document.getElementById('clientNumber').value || null;
+            const email = document.getElementById('email').value || null;
+            const contactReason = document.getElementById('contactReason').value;
+            const brandName = document.getElementById('brandName').value || null;
+
+            if (!contactNumber || !clientName || !contactReason) {
+                alert("Les champs 'Numéro de téléphone', 'Nom et prénom du client' et 'Motif du contact' sont obligatoires.");
+                return;
+            }
+
+            const contact = {
+                contactNumber,
+                clientName,
+                clientNumber,
+                email,
+                contactReason,
+                brandName
+            };
+
+            const transaction = db.transaction(["contacts"], "readwrite");
+            const objectStore = transaction.objectStore("contacts");
+            objectStore.add(contact);
+
+            transaction.oncomplete = function() {
+                alert("Contact ajouté avec succès !");
+                displayContacts();
+                document.getElementById('contactForm').reset();
+            };
+
+            transaction.onerror = function(event) {
+                console.error("Erreur lors de l'ajout du contact", event);
+            };
+        });
+
+        // Fonction pour afficher les contacts dans les cartes
+        function displayContacts(filter = "") {
+            const modalContactList = document.getElementById('modalContactList');
+            modalContactList.innerHTML = '';
+            const transaction = db.transaction(["contacts"], "readonly");
+            const objectStore = transaction.objectStore("contacts");
+            const request = objectStore.openCursor();
+
+            request.onsuccess = function(event) {
+                const cursor = event.target.result;
+                if (cursor) {
+                    const contact = cursor.value;
+
+                    const match = contact.clientName.toLowerCase().includes(filter.toLowerCase()) ||
+                                  contact.contactNumber.includes(filter) ||
+                                  (contact.brandName && contact.brandName.toLowerCase().includes(filter.toLowerCase()));
+
+                    if (filter === "" || match) {
+                        // Affichage dans les cartes
+                        const contactCard = document.createElement('div');
+                        contactCard.classList.add('contact-card');
+                        contactCard.dataset.id = contact.id;
+                        contactCard.innerHTML = `
+                            <h2>${contact.clientName}</h2>
+                            <p><strong>Téléphone :</strong> ${contact.contactNumber}</p>
+                            <p><strong>Numéro client :</strong> ${contact.clientNumber || 'Non renseigné'}</p>
+                            <p><strong>Email :</strong> ${contact.email || 'Non renseigné'}</p>
+                            <p><strong>Motif du contact :</strong> ${contact.contactReason}</p>
+                            <p><strong>Marque contactée :</strong> ${contact.brandName || 'Non renseigné'}</p>
+                            <button class="delete-btn">Supprimer</button>
+                        `;
+                        modalContactList.appendChild(contactCard);
+                    }
+                    cursor.continue();
+                }
+            };
+
+            request.onerror = function(event) {
+                console.error("Erreur lors de l'affichage des contacts", event);
+            };
+        }
+
+        // Barre de recherche - affichage après clic
+        document.getElementById('searchButton').addEventListener('click', function() {
+            const searchValue = document.getElementById('searchBar').value;
+            displayContacts(searchValue);
+        });
+
+        // Afficher ou cacher la modale des contacts
+        document.getElementById('toggleButton').addEventListener('click', function() {
+            document.getElementById('contactModal').style.display = 'flex';
+            displayContacts(); // Afficher les contacts lors de l'ouverture de la modale
+        });
+
+        // Fermer la modale
+        document.querySelectorAll('.close, #closeModalFooter').forEach(button => {
+            button.addEventListener('click', function() {
+                document.getElementById('contactModal').style.display = 'none';
+            });
+        });
+
+        // Gérer la suppression d'une carte
+        document.getElementById('modalContactList').addEventListener('click', function(event) {
+            if (event.target.classList.contains('delete-btn')) {
+                contactToDelete = event.target.closest('.contact-card').dataset.id;
+                document.getElementById('confirmModal').style.display = 'flex';
+            }
+        });
+
+        // Confirmer la suppression
+        document.getElementById('confirmYes').addEventListener('click', function() {
+            const transaction = db.transaction(["contacts"], "readwrite");
+            const objectStore = transaction.objectStore("contacts");
+            objectStore.delete(Number(contactToDelete));
+
+            transaction.oncomplete = function() {
+                alert("Contact supprimé avec succès !");
+                displayContacts();
+                document.getElementById('confirmModal').style.display = 'none';
+            };
+
+            transaction.onerror = function(event) {
+                console.error("Erreur lors de la suppression du contact", event);
+            };
+        });
+
+        // Annuler la suppression
+        document.getElementById('confirmNo').addEventListener('click', function() {
+            document.getElementById('confirmModal').style.display = 'none';
+        });
+    </script>
+</body>
+</html>
